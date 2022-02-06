@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -11,7 +11,7 @@
 
 //
 // utility functions for SHIMMER process and the read matching / mapping
-// 
+//
 
 use memmap::Mmap;
 use std::fmt;
@@ -30,12 +30,12 @@ pub fn get_hpc_seq(seq0: &Vec<u8>) -> HPCSeq {
     };
     let mut i = 0_usize;
     let seq0len = seq0.len();
-    
+
     while i < seq0len - 1 {
         let b = seq0[i]; // 2bit flag + 2bit base
         if b & 0b1100 != 0 {
-            i += 1;  // base marked as hp/dimer tial
-            continue
+            i += 1; // base marked as hp/dimer tial
+            continue;
         }
         seq.s.push(b & 0b0011);
         seq.p.push(i as u32);
@@ -92,10 +92,9 @@ pub fn match_reads(
     min_match_len: u32,
     bandwidth: u32,
 ) -> Option<OvlpMatch> {
-
     //
-    // A variation of the O(nD) algorithm for read alignments 
-    //  
+    // A variation of the O(nD) algorithm for read alignments
+    //
 
     // let min_match_len = 1200;
     let len0 = seq0.len();
@@ -113,8 +112,8 @@ pub fn match_reads(
     let band_tolerance = bandwidth;
     let mut k_min = 0_i32;
     let mut k_max = 0_i32;
-    let mut v_map = HashMap::<i32, u32>::new();
-    let mut u_map = HashMap::<i32, u32>::new();
+    let mut uv_map = HashMap::<i32, (u32, u32)>::new();
+    // uv_map: maping k to the u, v, which keep the d path end in k
     let mut delta_pts = HashMap::<(u32, i32), DeltaPoint>::new();
     let mut x: u32;
     let mut y: u32;
@@ -139,9 +138,8 @@ pub fn match_reads(
         deltas: None,
     };
 
-    for i in -(d_max as i32)..=(d_max as i32) {
-        v_map.insert(i, 0);
-        u_map.insert(i, 0);
+    for d in -(d_max as i32)..=(d_max as i32) {
+        uv_map.insert(d, (0, 0));
     }
     for d in 0..d_max {
         if k_max - k_min > max_band_width as i32 {
@@ -149,14 +147,13 @@ pub fn match_reads(
             break;
         }
         for k in (k_min..=k_max).step_by(2) {
-            if k == k_min
-                || ((k != k_max)
-                    && v_map.get(&(k as i32 - 1)).unwrap() < v_map.get(&(k as i32 + 1)).unwrap())
-            {
-                x = *v_map.get(&(k as i32 + 1)).unwrap();
+            let (_, vn) = uv_map.get(&(k - 1)).unwrap();
+            let (_, vp) = uv_map.get(&(k + 1)).unwrap();
+            if k == k_min || ((k != k_max) && vn < vp) {
+                x = *vp;
                 pre_k = k + 1;
             } else {
-                x = *v_map.get(&(k as i32 - 1)).unwrap() + 1;
+                x = *vn + 1;
                 pre_k = k - 1;
             }
             y = ((x as i32) - k) as u32;
@@ -200,8 +197,7 @@ pub fn match_reads(
             }
 
             // println!("IM {} {} {} {} {} {} {} {}", x, y, len0, len1, d, d_max, k, pre_k);
-            v_map.insert(k, x);
-            u_map.insert(k, x + y);
+            uv_map.insert(k, (x + y, x));
             if (x + y) as i32 > best_m {
                 best_m = (x + y) as i32;
             }
@@ -216,7 +212,8 @@ pub fn match_reads(
         let mut k_max_new = k_min;
         let mut k_min_new = k_max;
         for k2 in (k_min..=k_max).step_by(2) {
-            if *u_map.get(&k2).unwrap() as i32 >= (best_m - (band_tolerance as i32)) as i32 {
+            let (u, _) = uv_map.get(&k2).unwrap();
+            if *u as i32 >= (best_m - (band_tolerance as i32)) {
                 if k2 < k_min_new {
                     k_min_new = k2;
                 }
@@ -302,7 +299,7 @@ pub fn get_seq_fragment(
 
     if strand == 0 {
         for c in &mmap[s..e] {
-            if c & 0b1100 != 0b1100 { 
+            if c & 0b1100 != 0b1100 {
                 seq.push(base_map[(c & 0b0011) as usize]);
             } else {
                 seq.push(b'N');
@@ -310,7 +307,7 @@ pub fn get_seq_fragment(
         }
     } else {
         for c in &mmap[s..e] {
-            if ((c >> 4) & 0b1100) != 0b1100 { 
+            if ((c >> 4) & 0b1100) != 0b1100 {
                 seq.push(base_map[((c >> 4) & 0b0011) as usize]);
             } else {
                 seq.push(b'N');
@@ -493,7 +490,8 @@ pub fn sequence_to_shmmrs(rid: u32, seq: &Vec<u8>, w: u32, k: u32, r: u32) -> Ve
         }
         let c = (seq[pos] & 0b0011) as u64;
         // println!("C {} {} {}", seq[pos], pos, c);
-        if seq[pos] & 0b1100 != 0b1100 {     // Not non-A,C,G,T base 
+        if seq[pos] & 0b1100 != 0b1100 {
+            // Not non-A,C,G,T base
             fmmer.0 <<= 1;
             fmmer.0 |= c & 0b01;
             fmmer.0 &= mask;
