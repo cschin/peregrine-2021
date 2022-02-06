@@ -218,7 +218,7 @@ MeanQV:          41.36713
 
     However, while it was reasonable to do a repeat-suppressing assembly, the narrative about what an assembler should do is changing. Genomic researchers may want to get more about the repeat even if it needs additional compute power/energy ( > 20x for a human genome compared to a Peregrine run) to get the repetitive sequences in a genome. I think it is worth showing the same technique that we used in the original Peregrine-2021 can also get the high repeat content assembled with only moderate increases of computation cost/energy.
 
-    Another reason for this Peregrine-2021 assembler is that we were not happy with the C / Python hybrid approach used in the original Peregrine assembler. While C / Python combination is very efficient for rapid development, it has too many caveats. It could be interesting to learn something new as well. Following Richard Feynman's wisdom, "What I cannot create, I don't understand." To better understand how to handle repeats and understand the Rust programming language, I created Peregrine-2021 from late-2020 to mid-2021. I want to push Peregrine-2021 to the next stage to apply it to genomics research work; unfortunately, I realized it is too demanding to take this as a hobby or a side-gig. Given that I won't be able to push it too far by myself, it might still be helpful for others who are interested in using this. I finally decided to release the code for non-commercial use.
+    Another reason for this Peregrine-2021 assembler is that we were not happy with the C / Python hybrid approach used in the original Peregrine assembler. While C / Python combination is very efficient for rapid development, it has too many caveats. It could be interesting to learn something new as well. Following Richard Feynman's wisdom, "What I cannot create, I don't understand." To better understand how to handle repeats and understand the Rust programming language, I created Peregrine-2021 from late-2020 to mid-2021. I want to push Peregrine-2021 to the next stage to apply it to genomics research work; unfortunately, I realized it is too demanding to take this as a hobby or a side-gig. Given that I won't be able to push it too far by myself, it might still be helpful for others who are interested in using this. I finally decide to release the code for non-commercial use.
 
 * Q: I can't run it, can you help?
 
@@ -226,7 +226,7 @@ MeanQV:          41.36713
 
 * Q: The results are bad, do I do something wrong?
   
-    A: Possible. Like all other assemblers, Peregrine-2021 is design with some sepcifications in mind and test accordingly. Depending on the input data and the parameters used to run the assemblers, one might be able to improve the results. Unfortunately, there is no universal simple answer for how to investigate and improve now. It can be some trivial mistakes or very intensive investigation that related to inital sequence methods or even the genome biology itself. 
+    A: Possiblely. Like all other assemblers, Peregrine-2021 is design with some sepcifications in mind and test accordingly. Depending on the input data and the parameters used to run the assemblers, one might be able to improve the results. Unfortunately, there is no universal simple answer for how to investigate and improve now. It can be some trivial mistakes or very intensive investigation that related to inital sequence methods or even the genome biology itself. 
 
 * Q: I use it and generate some good results for publication, how do I cite it?
 
