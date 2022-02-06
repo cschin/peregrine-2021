@@ -10,7 +10,7 @@ The main method used in the genome assembler is described in [Human Genome Assem
 A modern Linux workstation or compute node with enough disk, CPUs, and RAM. It is better to have a good number of CPUs (my testing system has 20 cores) and a good amount of RAM (~ total 1.5x of the reads data set). For example, for 100G sequences, it is probably good to have at least 150G RAM. A smaller amount, e.g., 32G, works, but you will need some manual setup for effective computation.
 ## Some Ballpark Performance Summary 
 
-With a proper hardware (e.g. ~1Tb RAM), Peregrine-2021 had successful assembled a total 30G diploid genome (2n = 30G) with a contig N50 = 55.2Mb for a large diploid genome. (For who might want to know more details, I ran it as a unpaid service so I don't have much other infomation. [Link is the the graph of the assembly](https://twitter.com/infoecho/status/1330617986185457669?s=20&t=FlHjuWCHslvjxVdyZpU1gQ).)
+With a proper hardware (e.g. ~1Tb RAM), Peregrine-2021 had successful assembled a total 30G diploid genome (2n = 30G) with a contig N50 = 55.2Mb for a large diploid genome. (For who might want to know more details, I ran it as a unpaid service so I don't have much other infomation. [Link to the the graph of the assembly](https://twitter.com/infoecho/status/1330617986185457669?s=20&t=FlHjuWCHslvjxVdyZpU1gQ).)
 
 For a typical human-size assembly, a much cheaper compute instance with from 128G to 512G RAM can work well. (see this blog [Accelerating genome assembly with AWS Graviton2](https://aws.amazon.com/blogs/publicsector/accelerating-genome-assembly-aws-graviton2/)), and it takes only 2 to 3 hours wall o'clock time to get an assembly. (We also provide a "fast" mode eliminating one error correct stage for perfect reads as input.)
 
