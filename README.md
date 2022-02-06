@@ -261,13 +261,17 @@ Peregrine-2021 is still just another OLC assembler.
 
 3. It adapts the techniques using partial homopolymer compression for separating the reads from different haplotype.
 
-## Build
+## Build For X86_64
 
 1. Check [Rust Installation](https://www.rust-lang.org/tools/install)
 
-2. Run [`cargo install`](https://doc.rust-lang.org/cargo/commands/cargo-install.html) or [`cargo build`](https://doc.rust-lang.org/cargo/commands/cargo-build.html). Make sure you set up the environment variable `PATH` to the directory of the built binaries or you can run the excutable `pg_asm` with full path.
+2. Run [`cargo install`](https://doc.rust-lang.org/cargo/commands/cargo-install.html) or [`cargo build`](https://doc.rust-lang.org/cargo/commands/cargo-build.html). Make sure you set up the environment variable `PATH` to the directory of the built binaries or you can run the excutable `pg_asm` with full path. If you use `cargo build`, make sure you compile it with the `--release` option for optimization.
 
 3. `pg_asm` will run the assembly pipeline end-to-end. If it fails, it does not re-use the existing data when one runs `pg_asm` again. The assemblers is much faster than other assemblers, so it is less important to re-use intermidate data. That has been said, the built will contains executables (e.g. `pg_build_idx`, `pg_ovlp`, etc.) for each assembly steps which one can chain them together with their favorite workflow engine for re-using and re-starting an assembly pipeline.
+
+4. A Dockerfile is provided for creating a Docker image. It also provide information to build the assembler from a clean environment.
+
+5. To compile in aarch64, it will need some configuration changes to get the best performance. The memory alloctor package needs to be patched for aarch64. See [https://github.com/cschin/mimalloc_rust/tree/aarch64_build] (https://github.com/cschin/mimalloc_rust/tree/aarch64_build).
 
 ## Other utility command line tools
 
