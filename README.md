@@ -238,7 +238,7 @@ MeanQV:          41.36713
 
     * [A draft reference assembly of the Psilocybe cubensis genome](https://www.ncbi.nlm.nih.gov/labs/pmc/articles/PMC8220353/) 
 
-    * [cannabis Genome: Jamaican Lion Strain ](https://www.medicinalgenomics.com/jamaican-lion-data-release/), Note Peregrine-2021 assembled thie genome in a old Mac Pro with only 64G RAM.
+    * [Cannabis Genome: Jamaican Lion strain ](https://www.medicinalgenomics.com/jamaican-lion-data-release/), Note Peregrine-2021 assembled thie genome in an old Mac Pro with only 64G RAM.
 
 * Q: I don't have a large memory machine, how do I run Peregrine-2021?
 
