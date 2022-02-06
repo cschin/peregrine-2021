@@ -1,4 +1,9 @@
-# Peregrine-2021: A faster and minimum genome assembler for long-reads with good enough accuracy with the Rust language
+# Peregrine-2021: A faster and minimum genome assembler 
+
+Peregrine-2021 is an genome assembler designed for long-reads that have good enough accuracy. It is written with the Rust language.
+The main method used in the genome assembler is described in [Human Genome Assembly in 100 Minutes](https://www.biorxiv.org/content/10.1101/705616v1).
+
+<img src="misc/logo.png" alt="PeregrineLogo" width="120"/>
 
 ## System requirement: 
 
