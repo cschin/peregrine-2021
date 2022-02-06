@@ -271,7 +271,7 @@ Peregrine-2021 is still just another OLC assembler.
 
 4. A Dockerfile is provided for creating a Docker image. It also provide information to build the assembler from a clean environment.
 
-5. To compile in aarch64, it will need some configuration changes to get the best performance. The memory alloctor package needs to be patched for aarch64. See [https://github.com/cschin/mimalloc_rust/tree/aarch64_build] (https://github.com/cschin/mimalloc_rust/tree/aarch64_build).
+5. To compile in aarch64, it will need some configuration changes to get the best performance. The memory alloctor package needs to be patched for aarch64. See [https://github.com/cschin/mimalloc_rust/tree/aarch64_build](https://github.com/cschin/mimalloc_rust/tree/aarch64_build).
 
 ## Other utility command line tools
 
