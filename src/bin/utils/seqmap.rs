@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -10,7 +10,7 @@
 #![allow(dead_code)]
 
 //
-// for handling the read mapping 
+// for handling the read mapping
 //
 
 use lazy_static::lazy_static;
@@ -99,8 +99,11 @@ impl SeqDB {
                 self.seqname2id.insert(seqname.clone(), sid);
                 self.seqlen.insert(seqname.clone(), rec.seq.len());
                 self.seqs.push(encode_biseq(&rec.seq));
-                
-                let mask= QR.find_iter(&rec.seq).map(|m| (m.start(), m.end())).collect::<Vec<(usize, usize)>>();
+
+                let mask = QR
+                    .find_iter(&rec.seq)
+                    .map(|m| (m.start(), m.end()))
+                    .collect::<Vec<(usize, usize)>>();
                 self.masks.push(mask);
                 //println!("{:?}", self.mask);
                 sid += 1;
@@ -116,8 +119,11 @@ impl SeqDB {
                 self.seqname2id.insert(seqname.clone(), sid);
                 self.seqlen.insert(seqname.clone(), rec.seq.len());
                 self.seqs.push(encode_biseq(&rec.seq));
-                
-                let mask= QR.find_iter(&rec.seq).map(|m| (m.start(), m.end())).collect::<Vec<(usize, usize)>>();
+
+                let mask = QR
+                    .find_iter(&rec.seq)
+                    .map(|m| (m.start(), m.end()))
+                    .collect::<Vec<(usize, usize)>>();
                 self.masks.push(mask);
                 //printlnmask!("{:?}", self.mask);
                 sid += 1;
@@ -326,13 +332,21 @@ pub fn generate_shmmr_map(shmmrs0: &Shmmrs, shmmrs1: &Shmmrs, max_hits: usize) -
                         let ppos0 = ((*yy0 & 0xFFFFFFFF) >> 1) as u32;
                         let ppos1 = ((*yy1 & 0xFFFFFFFF) >> 1) as u32;
                         let group = 0;
-                        
+
                         match orientation {
-                            0 => if (y0 & 0b01) != (yy0 & 0b01) || (y1 & 0b01) != (yy1 & 0b01) {continue},
-                            1 => if (y0 & 0b01) == (yy1 & 0b01) || (y1 & 0b01) == (yy0 & 0b01) {continue}
-                            _ => ()
+                            0 => {
+                                if (y0 & 0b01) != (yy0 & 0b01) || (y1 & 0b01) != (yy1 & 0b01) {
+                                    continue;
+                                }
+                            }
+                            1 => {
+                                if (y0 & 0b01) == (yy1 & 0b01) || (y1 & 0b01) == (yy0 & 0b01) {
+                                    continue;
+                                }
+                            }
+                            _ => (),
                         }
-                       
+
                         rmv.push((
                             pos0..pos1,
                             [rid0, pos0, pos1, rid1, ppos0, ppos1, orientation, group],
@@ -817,15 +831,17 @@ pub fn dedup_target_seqs(
             let seq_name = sdb1.id2seqname.get(&sid1).unwrap();
             if sdb1.masks[sid1 as usize].len() != 1 {
                 return Ok(());
-            } 
+            }
             writeln!(out_file, ">{}", seq_name)?;
-            let mut seq_tmp: Vec<u8> = sdb1.seqs[sid1 as usize].iter().map(|b| { (b & 0b0011) + 4}).collect();
-            sdb1.masks[sid1 as usize].iter().for_each(|&(b,e)| {
+            let mut seq_tmp: Vec<u8> = sdb1.seqs[sid1 as usize]
+                .iter()
+                .map(|b| (b & 0b0011) + 4)
+                .collect();
+            sdb1.masks[sid1 as usize].iter().for_each(|&(b, e)| {
                 for i in b..e {
                     seq_tmp[i] -= 4;
                 }
-            }
-            );
+            });
             let seq: Vec<u8> = seq_tmp
                 .iter()
                 .filter(|&b| *b < 4)

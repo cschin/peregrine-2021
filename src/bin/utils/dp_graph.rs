@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -10,11 +10,10 @@
 #![allow(dead_code)]
 
 ///
-/// This code convert  the overlaps into assembly graph. Like most genome 
-/// assembler, there are many huristici rules guided by some general 
+/// This code convert  the overlaps into assembly graph. Like most genome
+/// assembler, there are many huristici rules guided by some general
 /// principles and intuitions.
-/// 
-
+///
 use glob::glob;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::visit::{Bfs, DfsPostOrder};
@@ -35,9 +34,9 @@ fn build_read_ovlp_data<P>(filename: P) -> OverlapMap
 where
     P: AsRef<Path>,
 {
-    // 
+    //
     // parsing the overlapper output converting into internal data structure `OverlapMap`
-    // 
+    //
 
     let mut rid2ovlp = OverlapMap::default();
     let mut buffer = String::new();
@@ -53,7 +52,7 @@ where
 
                 if ovlp.dist >= 12 && ovlp.max_dist_c == 0 {
                     // if overapped reads have big differences in homoployer regions (dist large but dist_c smalle)
-                    // we might need to improve this in lower coverage cases 
+                    // we might need to improve this in lower coverage cases
                     continue;
                 }
 
@@ -98,7 +97,7 @@ fn is_dead_ended(v: &Vec<Overlap>, s: &FxHashSet<u32>) -> bool {
 
 fn is_chimer(v: &Vec<Overlap>) -> bool {
     // huristic method to determine if a read may be a chimer by a quick coverage over the read
-    // analysis 
+    // analysis
     let mut left_most: i32 = i32::MAX;
     let mut right_most: i32 = i32::MIN;
     let mut rlen: u32 = 0;
@@ -135,12 +134,11 @@ fn get_rpair2ovlps(
     low_q: &FxHashSet<u32>,
     bestn: usize,
 ) -> FxHashMap<ReadPair, Overlap> {
-
-    // filter overlaps to find all dovetail overlaps 
-    // it needs the informaiton of contained / chimers / low_q reads etc, to 
+    // filter overlaps to find all dovetail overlaps
+    // it needs the informaiton of contained / chimers / low_q reads etc, to
     // avoid missing overlaps masked by those.
     //
-    // we also reduce the overlaps used to only the best reads to reduce computation 
+    // we also reduce the overlaps used to only the best reads to reduce computation
     // complexity.
 
     let mut rpair2overlap = FxHashMap::<ReadPair, Overlap>::default();
@@ -292,7 +290,8 @@ fn get_rpair2ovlps(
         if !found {
             for i in 0..bestn {
                 if let Some(vv) = right_candidates.get(i) {
-                    if vv.dist_c == 0 { // using dist_c than dist for hp compressed match
+                    if vv.dist_c == 0 {
+                        // using dist_c than dist for hp compressed match
                         // println!("O {}", vv.format());
                         let rp = ReadPair {
                             rid0: vv.rid0,
@@ -332,7 +331,6 @@ fn get_rpair2ovlps(
 }
 
 fn get_g0(rpair2overlap: &FxHashMap<ReadPair, Overlap>) -> DiGraphMap<(u32, u8), u32> {
-
     // get `g0` the raw assembly overlap graph
 
     let mut g0 = DiGraphMap::<(u32, u8), u32>::new();
@@ -355,7 +353,6 @@ fn patch_ends(
     rid2ovlp_all: &FxHashMap<u32, Vec<Overlap>>,
     rpair2overlap: &mut FxHashMap<ReadPair, Overlap>,
 ) -> () {
-
     // rescue the connection between two regions that are connected by a tangled blob
 
     let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
@@ -430,14 +427,13 @@ fn patch_ends(
     log_resource("BGN: patch_ends, stage3", &mut rdata);
     transitive_reduction(&mut g0);
     log_resource("END: patch_ends, stage3", &mut rdata);
-    
+
     log_resource("BGN: patch_ends, stage5", &mut rdata);
     transitive_reduction(&mut g0);
     log_resource("END: patch_ends, stage5", &mut rdata);
 }
 
 fn is_branch(g: &DiGraphMap<(u32, u8), u32>, w: &(u32, u8), path_reads: &FxHashSet<u32>) -> bool {
-
     // Given a set of reads in a path and a node, check if there is ture branch at the node in the paths
     // If all out edge eventually merge, then we see a bubble rather than a true branch.
 
@@ -487,8 +483,7 @@ fn trim_path(
     g: &DiGraphMap<(u32, u8), u32>,
     path_edge_list: &Vec<((u32, u8), (u32, u8))>,
 ) -> Vec<((u32, u8), (u32, u8))> {
-
-    // 
+    //
     // given a list of edges, generate an unbranch path from the beginning
     //
 
@@ -518,9 +513,7 @@ fn get_path_from_seed(
     g1: &DiGraphMap<(u32, u8), u32>,
     seed: &(u32, u8),
 ) -> (Vec<((u32, u8), (u32, u8))>, i32) {
-  
     // find the best path from a seed
-
 
     let v = *seed;
     let mut path_weight = FxHashMap::<(u32, u8), i32>::default();
@@ -619,7 +612,6 @@ fn write_paths_from_seeds(
     ctg_tags: &mut FxHashMap<u32, &str>,
     read_to_ctg: &mut FxHashMap<ReadNode, Vec<(u32, u32)>>,
 ) -> () {
-
     // output the path from seeds in the layout file
 
     for v in seeds {
@@ -704,7 +696,6 @@ fn write_paths_from_seeds(
 
         let mut ctg_pos = 0_u32;
         for &(v, w) in edge_list {
-
             used_edges.insert((v, w));
             g1.remove_edge(v, w);
             g1.remove_edge((w.0, 1 - w.1), (v.0, 1 - v.1));
@@ -761,7 +752,6 @@ fn generate_layout(
     mut read_to_ctg: &mut FxHashMap<ReadNode, Vec<(u32, u32)>>,
     output_prefix: &str,
 ) -> () {
-
     //
     // Interative generate the layour from the best seeds in the part of assembly without a circle.
     // After that, we resolve the sub graph with circles.
@@ -818,7 +808,7 @@ fn generate_layout(
                 seeds2.push(s);
             }
         }
-        
+
         write_paths_from_seeds(
             &mut wg,
             &seeds2,
@@ -886,9 +876,8 @@ fn generate_layout(
 }
 
 pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Result<(), io::Error> {
-    
     //
-    // The whole overlap to layout workflow  
+    // The whole overlap to layout workflow
     //
 
     let prefix = prefix.clone();
@@ -943,7 +932,6 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
     for r in rid2ovlp_all.keys() {
         let v = rid2ovlp_all.get(r).unwrap();
         for vv in v.iter() {
-
             if vv.dist_c > 2 {
                 continue;
             }
@@ -999,7 +987,7 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
 
     let gout_filename = format!("{}_g.dat", out_prefix);
     let mut graph1_file = BufWriter::new(File::create(gout_filename).unwrap());
-    
+
     for (v, w, len) in g_out.all_edges() {
         let _res = writeln!(graph1_file, "G {} {} {} {} {}", v.0, v.1, w.0, w.1, len);
     }

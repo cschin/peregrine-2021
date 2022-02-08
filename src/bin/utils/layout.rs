@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -33,9 +33,8 @@ where
 }
 
 fn get_shmr_offset(s0: &Vec<u8>, s1: &Vec<u8>) -> (u32, u32) {
-    
     // take two sequences and use the shmmrs to compute/etimate the offset between them
-    // here we take the first hit, it might be useful to use the most common offset 
+    // here we take the first hit, it might be useful to use the most common offset
 
     let mmer0 = sequence_to_shmmrs(0, &s0, 24, 24, 1);
     let mmer1 = sequence_to_shmmrs(0, &s1, 24, 24, 1);

@@ -1,6 +1,6 @@
 // from https://vallentin.dev/2019/06/06/versioning
 
-use std::env::{consts::{OS, ARCH}};
+use std::env::consts::{ARCH, OS};
 use std::process::Command;
 
 #[cfg(debug_assertions)]
@@ -9,17 +9,34 @@ const BUILD_TYPE: &'static str = "debug";
 const BUILD_TYPE: &'static str = "release";
 
 fn main() {
-    let version_string =
-        format!("{} {} ({}:{}{}, {} build, {} [{}] [{}])",
+    let branch_name = get_branch_name();
+    if branch_name != String::from("bioconda") {
+        let version_string = format!(
+            "{} {} ({}:{}{}, {} build, {} [{}] [{}])",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION"),
             get_branch_name(),
             get_commit_hash(),
             if is_working_tree_clean() { "" } else { "+" },
             BUILD_TYPE,
-            OS, ARCH, get_rustc_version());
+            OS,
+            ARCH,
+            get_rustc_version()
+        );
 
-    println!("cargo:rustc-env=VERSION_STRING={}", version_string);
+        println!("cargo:rustc-env=VERSION_STRING={}", version_string);
+    } else {
+        let version_string = format!(
+            "{} {} (bioconda {} build, {} [{}] [{}])",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION"),
+            BUILD_TYPE,
+            OS,
+            ARCH,
+            get_rustc_version()
+        );
+        println!("cargo:rustc-env=VERSION_STRING={}", version_string);
+    }
 }
 
 fn get_rustc_version() -> String {
@@ -31,8 +48,9 @@ fn get_rustc_version() -> String {
 
     assert!(output.status.success());
 
-    String::from_utf8_lossy(&output.stdout).trim_end().to_string()
-
+    String::from_utf8_lossy(&output.stdout)
+        .trim_end()
+        .to_string()
 }
 
 fn get_commit_hash() -> String {
@@ -64,7 +82,9 @@ fn get_branch_name() -> String {
 
     //assert!(output.status.success());
     if output.status.success() {
-        String::from_utf8_lossy(&output.stdout).trim_end().to_string()
+        String::from_utf8_lossy(&output.stdout)
+            .trim_end()
+            .to_string()
     } else {
         String::from("bioconda")
     }

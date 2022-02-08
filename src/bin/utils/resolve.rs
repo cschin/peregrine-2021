@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -9,7 +9,7 @@
 
 #![allow(dead_code)]
 //
-// for resolve contigs that are highly similar to each others which are most 
+// for resolve contigs that are highly similar to each others which are most
 // likily be homologuous pairs in a diploid genome
 //
 use super::build_sdb::FastxReader;
@@ -59,7 +59,6 @@ pub fn resolve_ht(
     k: u32,
     r: u32,
 ) -> Result<(), io::Error> {
-
     log::info!("resolve:fasta_file: {}", fasta_file);
     log::info!("resolve:output_prefix: {}", output_prefix);
     log::info!("resolve:parameters: w:{}, k:{}, r:{}", w, k, r,);
@@ -78,7 +77,7 @@ pub fn resolve_ht(
         let rec = rec.unwrap();
         //seqdb.insert(r.id, r.seq);
         //println!("N {}", String::from_utf8_lossy(&r.id));
-        let rec_2bitseq =base2twobit(&rec.seq);
+        let rec_2bitseq = base2twobit(&rec.seq);
         let shmmers = sequence_to_shmmrs(rid, &rec_2bitseq, w, k, r);
         for mm in shmmers.iter() {
             let hash = mm.x >> 8;

@@ -1,12 +1,11 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
 // work. If not, see <http://creativecommons.org/licenses/by-nc-sa/4.0/>.
-
 
 #![allow(dead_code)]
 
@@ -40,7 +39,7 @@ fn index_chunk(
     rfactor: u32,
 ) -> Result<(), io::Error> {
     // Create index for a chunk from the read database
-    
+
     let filename = format!("{}-{:02}-of-{:02}.dat", prefix, chunk, total_chunk);
     let mut out_f = BufWriter::new(File::create(filename).unwrap());
 
@@ -87,7 +86,7 @@ pub fn build(
     parameters: &Parameters,
 ) -> () {
     // Using thread pool to build the SHIMMER index in paralle
-    
+
     let mut read_index = Vec::<ReadLocation>::new();
 
     if let Ok(lines) = read_lines(index_file) {

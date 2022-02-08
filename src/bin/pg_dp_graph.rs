@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -41,7 +41,7 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         .with_utc_timestamps()
         .init()
         .unwrap();
-        
+
     let prefix = matches.value_of("prefix").unwrap().to_string();
     let out_prefix = matches.value_of("out_prefix").unwrap().to_string();
     let bestn = matches

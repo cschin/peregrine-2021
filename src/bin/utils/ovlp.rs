@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -9,7 +9,7 @@
 
 #![allow(dead_code)]
 //
-// using the SHIMMER index to find and verify overalaps  
+// using the SHIMMER index to find and verify overalaps
 //
 use super::shmmrutils::*;
 use super::Parameters;
@@ -118,9 +118,6 @@ fn format_overlap(o: Overlap) -> String {
     )
 }
 
-
-
-
 fn get_marker_cov(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap> {
     let mut anchors: Vec<u32> = Vec::with_capacity(256);
     let mut delta_count: FxHashMap<u32, u32> = FxHashMap::default();
@@ -224,7 +221,7 @@ fn get_marker_cov(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap>
             continue;
         }
         rp.insert(v.rid1);
-        if (v.max_dist_c > 2 && v.dist_c <= 1) ||  (v.max_dist_c <= 2 && v.dist_c == 0)  {
+        if (v.max_dist_c > 2 && v.dist_c <= 1) || (v.max_dist_c <= 2 && v.dist_c == 0) {
             v.flag |= 0x2;
         }
     }
@@ -305,7 +302,6 @@ fn process_hits(
     let mut seq0 = Vec::<u8>::with_capacity(len0);
     let mut seq1 = Vec::<u8>::with_capacity(len1);
 
-
     for c in &readsdb[s0..e0] {
         let base_flag_2bit = c & 0x0F;
         seq0.push(base_flag_2bit);
@@ -358,7 +354,7 @@ fn process_hits(
     //assert!((offset1 as usize) < seq1.len(), "DDD {} {} {} {} {} {}", rid0, rid1, len0, len1, bgn, end);
     let seq0 = get_hpc_seq(&seq0[(offset0 as usize)..].to_vec());
     let seq1 = get_hpc_seq(&seq1[(offset1 as usize)..].to_vec());
-       
+
     if let Some(ovlpmatch) = match_reads(&seq0.s, &seq1.s, true, tol, 1200, 16) {
         let idt_est = 100.0_f32 - 100.0 * (ovlpmatch.dist as f32) / (ovlpmatch.m_size as f32);
         let left = bgn;
@@ -437,7 +433,7 @@ fn extract_candidates(
                         let reversed = false;
                         // TODO (July 25, 2021): check the mmer strand and pair strand is consistent
                         // We don't run into problem as we check the alignment later, maybe it is beneficial to fitering those in-consistent one firts
-                        // if  (m_rid & 0x01) != (y0 & 0x01) { continue }; 
+                        // if  (m_rid & 0x01) != (y0 & 0x01) { continue };
                         candidates
                             .entry(rid1)
                             .or_insert_with(|| Vec::<(i32, bool)>::with_capacity(1024))
@@ -465,7 +461,7 @@ fn extract_candidates(
                         let reversed = true;
                         // TODO (July 25, 2021): check the mmer strand and pair strand is consistent
                         // We don't run into problem as we check the alignment later, maybe it is beneficial to fitering those in-consistent one firts
-                        // if  (m_rid & 0x01) == (y0 & 0x01) { continue }; 
+                        // if  (m_rid & 0x01) == (y0 & 0x01) { continue };
                         candidates
                             .entry(rid1)
                             .or_insert_with(|| Vec::<(i32, bool)>::with_capacity(1024))
@@ -719,7 +715,7 @@ impl Iterator for ShmrIdxSet {
         let rid = (y0 >> 32) as u32;
         out.push(*mmer);
         c_mmer_idx += 1;
- 
+
         loop {
             if c_mmer_idx >= self.n_mmers {
                 break;
@@ -748,7 +744,6 @@ pub fn ovlp(
     out_prefix: &String,
     parameters: &Parameters,
 ) -> Result<(), io::Error> {
-
     let filename = format!("{}-??-of-??.dat", shmmr_index_file_prefix);
     //let filename = "/wd/resolve_overlap_test/asm_ext_k56/1-index/shmr-L2-??-of-20.dat";
     let mut smp_index = FxHashMap::<u128, Vec<u64>>::default();
@@ -806,7 +801,6 @@ pub fn ovlp(
     }
     smp_index.shrink_to_fit();
     log::info!("smp_index size updated: {}", smp_index.len());
-
 
     let mut read_index = Vec::<ReadLocation>::with_capacity(65535);
 

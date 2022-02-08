@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -131,10 +131,9 @@ impl<R: BufRead> FastxReader<R> {
 }
 
 fn get_hpc_flag(seq0: &Vec<u8>) -> Vec<u8> {
-
     // We use a hybrid approach to handle homopolymer sequence
-    // In somce case, it is use to know a base is part of long homopolymer and 
-    // it is prone to have insertion or deletion errors. We don't compress them 
+    // In somce case, it is use to know a base is part of long homopolymer and
+    // it is prone to have insertion or deletion errors. We don't compress them
     // when we store the sequences but we mark those bases in case it is useful
     // to ignore them.
 
@@ -195,7 +194,6 @@ pub fn encode_biseq(s: &Vec<u8>) -> Vec<u8> {
     // flag: 0b10xx = hp tagged, 0b00xx = non hp tagged
     // 0b1100 (12) : None base
 
-
     let fourbit_map_f: [u8; 256] = [
         12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
         12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
@@ -233,7 +231,7 @@ pub fn encode_biseq(s: &Vec<u8>) -> Vec<u8> {
 pub fn build(seq_list_file: &String, out_prefix: &String) -> Result<usize, io::Error> {
     // given a list of file in `seq_list_file`, read the sequences to building the sequence
     // database and index
-    
+
     let seqdb_name = format!("{}.seqdb", out_prefix);
     log::info!("create seq db: {}", seqdb_name);
     let mut out_db_file = File::create(seqdb_name)?;

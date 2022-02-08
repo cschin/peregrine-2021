@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -77,7 +77,7 @@ pub struct Overlap {
     pub bgn1: u32,
     pub end1: u32,
     pub dist: u32,
-     // dist: raw distice determine by the O(Nd) alignment algorithm
+    // dist: raw distice determine by the O(Nd) alignment algorithm
     pub idt: f32,
     pub dist_c: u32,
     // dist_c: "distance" after hp corrections
@@ -274,7 +274,6 @@ fn get_upath(g: &OvlpGraph, v: ReadNode, w: ReadNode) -> Vec<ReadNode> {
 }
 
 pub fn get_utg_paths(g: &OvlpGraph) -> Vec<(u32, Vec<ReadNode>)> {
-
     //
     // get all unitig paths
     //
@@ -302,7 +301,7 @@ pub fn get_utg_paths(g: &OvlpGraph) -> Vec<(u32, Vec<ReadNode>)> {
     paths
 }
 
-pub fn transitive_reduction(g: &mut U32AsmGraph) -> () {    
+pub fn transitive_reduction(g: &mut U32AsmGraph) -> () {
     let mut tr_edges = FxHashSet::<((u32, u8), (u32, u8))>::default();
     for v in g.nodes().into_iter() {
         let mut edges = Vec::<(u32, (u32, u8), (u32, u8))>::with_capacity(32);
@@ -557,7 +556,6 @@ fn find_branching_nodes(
     min_path_length: u32,
     max_edge_count: u32,
 ) -> Vec<(u32, u8)> {
-
     // output nodes that has branches
 
     let mut branching_nodes = FxHashSet::<(u32, u8)>::default();
@@ -616,7 +614,6 @@ fn find_branching_nodes(
 }
 
 fn find_path(g: &UtgGraph, s: ReadNode, t: ReadNode) -> Option<(u32, Vec<OvlpEdge>)> {
-
     // search a path from s to t
 
     assert!(s != t);
@@ -676,7 +673,6 @@ fn find_path(g: &UtgGraph, s: ReadNode, t: ReadNode) -> Option<(u32, Vec<OvlpEdg
 }
 
 pub fn utg_reduction(paths: &Vec<(u32, Vec<ReadNode>)>, g0: &OvlpGraph) -> (UtgGraph, OvlpGraph) {
-
     // graph reduction in the unitig level
 
     let mut utg_g = UtgGraph::new();

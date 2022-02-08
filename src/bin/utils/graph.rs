@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -12,7 +12,6 @@
 //
 // old graph data structures and layout code for ovlp2layout_v1
 //
-
 
 use glob::glob;
 use petgraph::graphmap::DiGraphMap;
@@ -1254,7 +1253,7 @@ fn write_paths_from_seeds(
     seeds: &Vec<(u32, u8, u32)>,
     mut used_reads: &mut FxHashSet<u32>,
     layout_file: &mut BufWriter<File>,
-    rpair2overlap: &FxHashMap<ReadPair,Overlap>,
+    rpair2overlap: &FxHashMap<ReadPair, Overlap>,
     utg_id: &mut u32,
 ) -> () {
     for v in seeds {
@@ -1265,7 +1264,7 @@ fn write_paths_from_seeds(
         if edge_list.len() == 0 {
             continue;
         }
-        let mut edge_list2 = Vec::<((u32, u8), (u32, u8))>::with_capacity(128); 
+        let mut edge_list2 = Vec::<((u32, u8), (u32, u8))>::with_capacity(128);
         let mut used_reads2 = FxHashSet::<u32>::default();
         for (v0, v1) in edge_list {
             if used_reads2.contains(&v0.0) {
@@ -1278,7 +1277,13 @@ fn write_paths_from_seeds(
         let _res = writeln!(
             layout_file,
             "U {} {}:{} {} {}:{} {}",
-            utg_id, v.0, v.1, v.2, w.0, w.1, edge_list2.len()
+            utg_id,
+            v.0,
+            v.1,
+            v.2,
+            w.0,
+            w.1,
+            edge_list2.len()
         );
         let mut used_reads_in_path = FxHashSet::<u32>::default();
         for (v, w) in edge_list2 {
@@ -1330,15 +1335,22 @@ fn generate_layout(
     let layout_filename = format!("{}_layout.dat", output_prefix);
     let mut layout_file = BufWriter::new(File::create(layout_filename).unwrap());
     let mut utg_id = 0_u32;
-    write_paths_from_seeds(&g1, &seeds, &mut used_reads, &mut layout_file, &rpair2overlap, &mut utg_id);
+    write_paths_from_seeds(
+        &g1,
+        &seeds,
+        &mut used_reads,
+        &mut layout_file,
+        &rpair2overlap,
+        &mut utg_id,
+    );
 
     // process the rest un-layouted nodes, likely in circles
 
     let mut g1_res = DiGraphMap::<(u32, u8), u32>::new();
     for e in g1.all_edges() {
-        if used_reads.contains(&e.0.0) || used_reads.contains(&e.1.0) {
+        if used_reads.contains(&e.0 .0) || used_reads.contains(&e.1 .0) {
             continue;
-        } 
+        }
         g1_res.add_edge(e.0, e.1, *e.2);
     }
 
@@ -1358,7 +1370,14 @@ fn generate_layout(
         seeds.push((v.0, v.1, count));
     }
     seeds.sort_by(|a, b| (b.2).partial_cmp(&a.2).unwrap());
-    write_paths_from_seeds(&g1_res, &seeds, &mut used_reads, &mut layout_file, &rpair2overlap, &mut utg_id); 
+    write_paths_from_seeds(
+        &g1_res,
+        &seeds,
+        &mut used_reads,
+        &mut layout_file,
+        &rpair2overlap,
+        &mut utg_id,
+    );
 }
 
 pub fn ovlp2layout_v1(prefix: &String, out_prefix: &String, bestn: usize) -> () {

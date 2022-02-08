@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -34,7 +34,8 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         (@arg k: -k +takes_value "Kmer size [default: 56]")
         (@arg r: -r +takes_value "Reduction factor [default: 4]")
         (@arg log: --log +takes_value "log level: DBBUG or INFO (default)")
-    ).get_matches();
+    )
+    .get_matches();
 
     let log_level = match matches.value_of("log").unwrap_or("INFO") {
         "DEBUG" => log::LevelFilter::Debug,
@@ -63,7 +64,13 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         .unwrap();
 
     let rfactor = matches.value_of("r").unwrap_or("4").parse::<u32>().unwrap();
-    seqmap::dedup_target_seqs(&ref_fasta_file, &target_fasta_file, &output_file, wsize, ksize, rfactor)?;
+    seqmap::dedup_target_seqs(
+        &ref_fasta_file,
+        &target_fasta_file,
+        &output_file,
+        wsize,
+        ksize,
+        rfactor,
+    )?;
     Ok(())
 }
-

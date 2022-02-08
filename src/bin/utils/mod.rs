@@ -1,7 +1,7 @@
-// Peregrine Assembler and SHIMMER Genome Assembly Toolkit 
+// Peregrine Assembler and SHIMMER Genome Assembly Toolkit
 // 2019, 2020, 2021- (c) by Jason, Chen-Shan, Chin
 //
-// This Source Code Form is subject to the terms of the 
+// This Source Code Form is subject to the terms of the
 // Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 //
 // You should have received a copy of the license along with this
@@ -10,13 +10,13 @@
 pub mod build_idx;
 pub mod build_sdb;
 pub mod dp_graph;
-pub mod seqmap;
 pub mod graph;
 pub mod graph_analysis;
 pub mod layout;
 pub mod ovlp;
 pub mod ovlp_ec;
 pub mod resolve;
+pub mod seqmap;
 pub mod shmmrutils;
 pub use core::mem::MaybeUninit;
 pub use libc::{getrusage, rusage, RUSAGE_SELF, RUSAGE_THREAD};

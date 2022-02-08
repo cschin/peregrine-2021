@@ -20,22 +20,23 @@ use utils::build_idx::build;
 use utils::Parameters;
 fn main() -> () {
     let matches = clap_app!(pg_build_idx =>
-            (version: VERSION_STRING)
-            (author: "Jason Chin <jason@omnibio.ai>")
-            (about: "
+        (version: VERSION_STRING)
+        (author: "Jason Chin <jason@omnibio.ai>")
+        (about: "
 Peregrine-2021 genome assembler
 build the SHIMMER index from the reads for overlapping
 LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")            
-            (@arg SEQDB:+required "Path to the seqdb file ")
-            (@arg SEQIDX:+required "Path to the seqdb index file")
-            (@arg SHMRINDEXPREFIX: +required "The prefix to the output shimmer index database")
-            (@arg NTHREADS: +required "Number of threads")
-            (@arg NCHUNKS: +required "Number of partition")
-            (@arg w: -w +takes_value "Window size [default: 80]")
-            (@arg k: -k +takes_value "Kmer size [default: 56]")
-            (@arg r: -r +takes_value "Reduction factor [default: 6]")
-            (@arg log: --log +takes_value "log level: DBBUG or INFO (default)")
-        ).get_matches();
+        (@arg SEQDB:+required "Path to the seqdb file ")
+        (@arg SEQIDX:+required "Path to the seqdb index file")
+        (@arg SHMRINDEXPREFIX: +required "The prefix to the output shimmer index database")
+        (@arg NTHREADS: +required "Number of threads")
+        (@arg NCHUNKS: +required "Number of partition")
+        (@arg w: -w +takes_value "Window size [default: 80]")
+        (@arg k: -k +takes_value "Kmer size [default: 56]")
+        (@arg r: -r +takes_value "Reduction factor [default: 6]")
+        (@arg log: --log +takes_value "log level: DBBUG or INFO (default)")
+    )
+    .get_matches();
 
     let log_level = match matches.value_of("log").unwrap_or("INFO") {
         "DEBUG" => log::LevelFilter::Debug,
