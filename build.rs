@@ -45,9 +45,12 @@ fn get_commit_hash() -> String {
         .output()
         .unwrap();
 
-    assert!(output.status.success());
-
-    String::from_utf8_lossy(&output.stdout).to_string()
+    // assert!(output.status.success());
+    if output.status.success() {
+        String::from_utf8_lossy(&output.stdout).to_string()
+    } else {
+        String::from("bioconda")
+    }
 }
 
 fn get_branch_name() -> String {
@@ -59,9 +62,12 @@ fn get_branch_name() -> String {
         .output()
         .unwrap();
 
-    assert!(output.status.success());
-
-    String::from_utf8_lossy(&output.stdout).trim_end().to_string()
+    //assert!(output.status.success());
+    if output.status.success() {
+        String::from_utf8_lossy(&output.stdout).trim_end().to_string()
+    } else {
+        String::from("bioconda")
+    }
 }
 
 fn is_working_tree_clean() -> bool {
@@ -73,5 +79,9 @@ fn is_working_tree_clean() -> bool {
         .status()
         .unwrap();
 
-    status.code().unwrap() == 0
+    if status.success() {
+        status.code().unwrap() == 0
+    } else {
+        true
+    }
 }
