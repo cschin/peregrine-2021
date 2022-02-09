@@ -11,9 +11,11 @@
 //
 // using the SHIMMER index to find and verify overalaps
 //
+use super::getrusage;
 use super::shmmrutils::*;
 use super::Parameters;
-use super::{getrusage, RUSAGE_THREAD};
+#[cfg(target_os = "linux")]
+use super::RUSAGE_THREAD;
 use core::mem::MaybeUninit;
 use glob::glob;
 use memmap::{Mmap, MmapOptions};
@@ -572,10 +574,15 @@ fn output_ovlp_candidate_for_chunk(
     let mut file =
         BufWriter::new(File::create(format!("{}.{:02}", output_prefix, mychunk)).unwrap());
 
+    #[cfg(target_os = "linux")]
     let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
+    #[cfg(target_os = "linux")]
     let _res = unsafe { getrusage(RUSAGE_THREAD, &mut rdata) };
+    #[cfg(target_os = "linux")]
     let mut current_utime = rdata.ru_utime.tv_sec;
+    #[cfg(target_os = "linux")]
     let mut current_stime = rdata.ru_stime.tv_sec;
+    
     let mut count = 0_u64;
 
     for (rid0, shmmrs) in read_shmmr_index.iter() {
@@ -584,30 +591,38 @@ fn output_ovlp_candidate_for_chunk(
         }
         count += 1;
         if count % 10000 == 0 {
-            let _res = unsafe { getrusage(RUSAGE_THREAD, &mut rdata) };
-            let current_utime_now = rdata.ru_utime.tv_sec;
-            let current_stime_now = rdata.ru_stime.tv_sec;
-            let dutime = current_utime_now - current_utime;
-            let dstime = current_stime_now - current_stime;
-            log::info!(
-                "ovlp chunk {}, utime: {} s / 10000 reads, total: {} reads",
-                mychunk,
-                dutime,
-                count
-            );
-            log::info!(
-                "ovlp chunk {}, stime: {} s / 10000 reads, total: {} reads",
-                mychunk,
-                dstime,
-                count
-            );
-            if dstime as f64 / (dutime + dstime) as f64 > 0.3 {
-                log::warn!(
+            #[cfg(target_os = "linux")]
+            {
+                let current_utime_now = rdata.ru_utime.tv_sec;
+                let current_stime_now = rdata.ru_stime.tv_sec;
+                let dutime = current_utime_now - current_utime;
+                let dstime = current_stime_now - current_stime;
+                log::info!(
+                    "ovlp chunk {}, utime: {} s / 10000 reads, total: {} reads",
+                    mychunk,
+                    dutime,
+                    count
+                );
+                log::info!(
+                    "ovlp chunk {}, stime: {} s / 10000 reads, total: {} reads",
+                    mychunk,
+                    dstime,
+                    count
+                );
+                if dstime as f64 / (dutime + dstime) as f64 > 0.3 {
+                    log::warn!(
                     "excessive system cpu usage, consider to reduce conccurance or incerease RAM"
                 );
+                }
+                current_utime = current_utime_now;
+                current_stime = current_stime_now;
             }
-            current_utime = current_utime_now;
-            current_stime = current_stime_now;
+            #[cfg(not(target_os = "linux"))]
+            log::info!(
+                "ovlp chunk {} finished, total: {} reads",
+                mychunk,
+                count
+            );
         }
         let (mut candidates, total_count, overlimit_count) =
             extract_candidates(rid0, shmmrs, smp_index);

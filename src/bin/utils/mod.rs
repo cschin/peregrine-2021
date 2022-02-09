@@ -19,7 +19,9 @@ pub mod resolve;
 pub mod seqmap;
 pub mod shmmrutils;
 pub use core::mem::MaybeUninit;
-pub use libc::{getrusage, rusage, RUSAGE_SELF, RUSAGE_THREAD};
+#[cfg(target_os = "linux")]
+pub use libc::RUSAGE_THREAD;
+pub use libc::{getrusage, rusage, RUSAGE_SELF};
 
 #[derive(Copy, Clone)]
 pub struct Parameters {
