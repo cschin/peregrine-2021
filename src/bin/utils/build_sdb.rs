@@ -9,7 +9,7 @@
 
 #![allow(dead_code)]
 
-use flate2::bufread::GzDecoder;
+use flate2::bufread::MultiGzDecoder;
 use rayon::prelude::*;
 use std::fs::File;
 use std::io::prelude::*;
@@ -273,7 +273,7 @@ pub fn build(seq_list_file: &String, out_prefix: &String) -> Result<usize, io::E
         let _ = reader.seek(SeekFrom::Start(0));
         let mut seqs = Vec::<(u32, Vec<u8>, Vec<u8>)>::new();
         if is_gzfile {
-            let fastx_buf = BufReader::new(GzDecoder::new(&mut reader));
+            let fastx_buf = BufReader::new(MultiGzDecoder::new(&mut reader));
             let mut fastx_reader = FastxReader::new(fastx_buf, &input_fn)?;
             while let Some(r) = fastx_reader.next_rec() {
                 let r = r.unwrap();
