@@ -26,7 +26,7 @@ use std::io::{BufRead, BufReader, BufWriter, Read, Seek, SeekFrom, Write};
 pub type MapIntervalRecord = [u32; 8];
 pub type MapIntervals = FxHashMap<u32, IntervalTree<u32, MapIntervalRecord>>;
 pub type Shmmrs = Vec<Vec<MM128>>;
-use flate2::bufread::GzDecoder;
+use flate2::bufread::MultiGzDecoder;
 use petgraph::graphmap::DiGraphMap;
 use petgraph::unionfind::UnionFind;
 use rayon::prelude::*;
@@ -89,7 +89,7 @@ impl SeqDB {
 
         reader.seek(SeekFrom::Start(0))?;
         if is_gzfile {
-            let fastx_buf = BufReader::new(GzDecoder::new(&mut reader));
+            let fastx_buf = BufReader::new(MultiGzDecoder::new(&mut reader));
             let mut fastx_reader = FastxReader::new(fastx_buf, &self.filepath)?;
             let mut sid = 0;
             while let Some(rec) = fastx_reader.next_rec() {
