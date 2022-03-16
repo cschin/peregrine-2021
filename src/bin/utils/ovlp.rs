@@ -759,7 +759,7 @@ pub fn ovlp(
     out_prefix: &String,
     parameters: &Parameters,
 ) -> Result<(), io::Error> {
-    let filename = format!("{}-??-of-??.dat", shmmr_index_file_prefix);
+    let filename = format!("{}-???-of-???.dat", shmmr_index_file_prefix);
     //let filename = "/wd/resolve_overlap_test/asm_ext_k56/1-index/shmr-L2-??-of-20.dat";
     let mut smp_index = FxHashMap::<u128, Vec<u64>>::default();
     smp_index.reserve(65536);

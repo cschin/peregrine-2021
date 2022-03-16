@@ -40,7 +40,7 @@ fn index_chunk(
 ) -> Result<(), io::Error> {
     // Create index for a chunk from the read database
 
-    let filename = format!("{}-{:02}-of-{:02}.dat", prefix, chunk, total_chunk);
+    let filename = format!("{}-{:03}-of-{:03}.dat", prefix, chunk, total_chunk);
     let mut out_f = BufWriter::new(File::create(filename).unwrap());
 
     let mut wrt = Vec::<u8>::with_capacity(1 << 16);
