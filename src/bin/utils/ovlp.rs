@@ -11,11 +11,13 @@
 //
 // using the SHIMMER index to find and verify overalaps
 //
+#[cfg(target_os = "linux")]
 use super::getrusage;
 use super::shmmrutils::*;
 use super::Parameters;
 #[cfg(target_os = "linux")]
 use super::RUSAGE_THREAD;
+#[cfg(target_os = "linux")]
 use core::mem::MaybeUninit;
 use glob::glob;
 use memmap::{Mmap, MmapOptions};

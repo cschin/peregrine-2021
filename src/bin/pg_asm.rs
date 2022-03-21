@@ -80,7 +80,7 @@ fn get_ovlps(
     let ovlp_out = format!("{}/{}-ovlp", &work_dir, &prefix);
     log_resource("BGN: overlapping", rdata);
     let system = sysinfo::System::new_all();
-    let free_mem = system.get_total_memory() - system.get_used_memory();
+    let free_mem = system.total_memory() - system.used_memory();
     if (free_mem as f64) < ((nbase >> 10) as f64 * 1.5) {
         log::warn!("free memory is less than 1.5 x (total number of bases)");
         log::warn!(
@@ -253,10 +253,10 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         physical_cpus
     );
     let system = sysinfo::System::new_all();
-    log::info!("sys: total memory: {} KB", system.get_total_memory());
-    log::info!("sys: used memory: {} KB", system.get_used_memory());
-    log::info!("sys: total swap: {} KB", system.get_total_swap());
-    log::info!("sys: used swap: {} KB", system.get_used_swap());
+    log::info!("sys: total memory: {} KB", system.total_memory());
+    log::info!("sys: used memory: {} KB", system.used_memory());
+    log::info!("sys: total swap: {} KB", system.total_swap());
+    log::info!("sys: used swap: {} KB", system.used_swap());
 
     if !Path::new(&work_dir).exists() {
         create_dir_all(&work_dir)?;
