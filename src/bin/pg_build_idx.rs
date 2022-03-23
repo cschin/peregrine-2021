@@ -58,9 +58,9 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         .parse::<u32>()
         .unwrap();
     let nchunks = matches.value_of("NCHUNKS").unwrap().parse::<u32>().unwrap();
-    let wsize = matches.value_of("w").unwrap().parse::<u32>().unwrap();
-    let ksize = matches.value_of("k").unwrap().parse::<u32>().unwrap();
-    let rfactor = matches.value_of("r").unwrap().parse::<u32>().unwrap();
+    let wsize = matches.value_of("w").unwrap_or("80").parse::<u32>().unwrap();
+    let ksize = matches.value_of("k").unwrap_or("56").parse::<u32>().unwrap();
+    let rfactor = matches.value_of("r").unwrap_or("6").parse::<u32>().unwrap();
 
     let parameters = Parameters {
         nchunks: nchunks,
