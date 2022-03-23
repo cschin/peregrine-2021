@@ -122,6 +122,22 @@ fn format_overlap(o: Overlap) -> String {
     )
 }
 
+fn update_ovlp_for_collpased_assembly(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap> {
+
+    ovlps.sort_by(|a, b| b.idt.partial_cmp(&a.idt).unwrap());
+    let mut rid1set: FxHashSet<u32> = FxHashSet::default();
+    rid1set.reserve(256);
+    let mut new_ovlps: Vec<Overlap> = Vec::with_capacity(256);
+    for v in ovlps.iter_mut() {
+        if !rid1set.contains(&v.rid1) {
+            rid1set.insert(v.rid1);
+            v.flag |= 0x2;
+            new_ovlps.push(*v);
+        }
+    }
+    new_ovlps 
+}
+
 fn get_marker_cov(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap> {
     let mut anchors: Vec<u32> = Vec::with_capacity(256);
     let mut delta_count: FxHashMap<u32, u32> = FxHashMap::default();
@@ -671,7 +687,8 @@ fn output_ovlp_candidate_for_chunk(
             let ovlps_len = ovlps.len();
 
             if ovlps.len() > 0 {
-                let mut updated_ovlps = get_marker_cov(ovlps, &delta_map);
+                // let mut updated_ovlps = get_marker_cov(ovlps, &delta_map);
+                let mut updated_ovlps = update_ovlp_for_collpased_assembly(ovlps, &delta_map); 
                 updated_ovlps.sort_by(|a, b| a.d_left.cmp(&b.d_left));
                 for overlap in updated_ovlps {
                     let _res = writeln!(file, "O {}", format_overlap(overlap));
