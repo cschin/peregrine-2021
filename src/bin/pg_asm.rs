@@ -296,15 +296,7 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         layout::layout2ctg(&seqdb, &seqidx, &layout_file, &output_file_prefix)?;
         let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
         log_resource("END: layout2ctg", &mut rdata);
-        if no_resolve {
-            log::info!("ignore dup resolution");
-        } else {
-            let resolve_prefix = format!("{}/asm_sep", &work_dir);
-            log_resource("BEN: resolve_ht", &mut rdata);
-            let output_file = format!("{}_p.fa", output_file_prefix);
-            resolve_ht(&output_file, &resolve_prefix, wsize, ksize, rfactor)?;
-            log_resource("END: resolve_ht", &mut rdata);
-        }
+
     } else {
         // error correction
         let seqdb = cat_path(&work_dir, &format!("{}.seqdb", &prefix));
@@ -393,24 +385,23 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         layout::layout2ctg(&seqdb, &seqidx, &layout_file, &output_file_prefix)?;
         let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
         log_resource("END: layout2ctg", &mut rdata);
+    }
+    if no_resolve {
+        log::info!("ignore dup resolution");
+    } else {
+        let ref_file = format!("{}/asm_ctgs_m.fa", &work_dir);
+        let tgt_file = format!("{}/asm_ctgs_e0.fa", &work_dir);
+        let out_file = format!("{}/asm_ctgs_e.fa", &work_dir);
 
-        if no_resolve {
-            log::info!("ignore dup resolution");
-        } else {
-            let ref_file = format!("{}/asm_ctgs_m.fa", &work_dir);
-            let tgt_file = format!("{}/asm_ctgs_e0.fa", &work_dir);
-            let out_file = format!("{}/asm_ctgs_e.fa", &work_dir);
+        log_resource("BEN: dedup_a_ctgs", &mut rdata);
+        dedup_target_seqs(&ref_file, &tgt_file, &out_file, wsize, ksize, rfactor)?;
+        log_resource("END: dedup_a_ctgs", &mut rdata);
 
-            log_resource("BEN: dedup_a_ctgs", &mut rdata);
-            dedup_target_seqs(&ref_file, &tgt_file, &out_file, wsize, ksize, rfactor)?;
-            log_resource("END: dedup_a_ctgs", &mut rdata);
+        let resolve_prefix = format!("{}/asm_ctgs_m", &work_dir);
 
-            let resolve_prefix = format!("{}/asm_ctgs_m", &work_dir);
-
-            log_resource("BEN: resolve_ht", &mut rdata);
-            resolve_ht(&ref_file, &resolve_prefix, wsize, ksize, rfactor)?;
-            log_resource("END: resolve_ht", &mut rdata);
-        }
+        log_resource("BEN: resolve_ht", &mut rdata);
+        resolve_ht(&ref_file, &resolve_prefix, wsize, ksize, rfactor)?;
+        log_resource("END: resolve_ht", &mut rdata);
     }
     let (_, ut, st) = log_resource("END: pg_asm", &mut rdata);
     log::info!("pg_asm run end");
