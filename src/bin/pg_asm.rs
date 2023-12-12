@@ -15,7 +15,6 @@ static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 use clap::clap_app;
 use glob::glob;
-use num_cpus;
 use std::fs::File;
 use std::fs::{create_dir_all, remove_file};
 use std::io::{BufRead, Write};
@@ -100,8 +99,8 @@ fn get_ovlps(
 }
 
 fn main() -> Result<()> {
-    let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
-    let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
+    let mut rdata: MaybeUninit<libc::rusage> = unsafe { MaybeUninit::uninit().assume_init() };
+    let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata.assume_init_read()) };
 
     let matches = clap_app!(pg_asm =>
         (version: VERSION_STRING)
@@ -231,7 +230,9 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
     let start_wall_clock_time = SystemTime::now();
     log::info!("pg_asm run start");
 
-    log_resource("BGN: pg_asm", &mut rdata);
+    unsafe {
+        log_resource("BGN: pg_asm", &mut rdata.assume_init_mut());
+    }
     log::info!(
         "pg_asm run parameters: w:{}, k:{}, r:{}, tol:{} bestn:{}",
         wsize,
@@ -262,14 +263,16 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         create_dir_all(&work_dir)?;
     };
 
-    get_ovlps(
-        &input_reads,
-        &work_dir,
-        &prefix,
-        false,
-        &parameters,
-        &mut rdata,
-    )?;
+    unsafe {
+        get_ovlps(
+            &input_reads,
+            &work_dir,
+            &prefix,
+            false,
+            &parameters,
+            &mut rdata.assume_init_read(),
+        )?;
+    }
 
     if fastmode {
         log::info!("Fast mode: ignore read level error correction");
@@ -282,21 +285,20 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
 
         let layout_file = format!("{}_layout.dat", &layout_prefix);
 
-        log_resource("BGN: ovlp2layout", &mut rdata);
+        unsafe { log_resource("BGN: ovlp2layout", &mut rdata.assume_init_mut()); }
         log::info!("use layout method: {}", layout_method);
         match layout_method {
             1 => graph::ovlp2layout_v1(&ovlp_out, &layout_prefix, bestn),
             _ => dp_graph::ovlp2layout_v2(&ovlp_out, &layout_prefix, bestn)?,
         }
-        log_resource("END: ovlp2layout", &mut rdata);
+        unsafe { log_resource("END: ovlp2layout", &mut rdata.assume_init_mut()); }
 
         // layout -> sequence
         let output_file_prefix = format!("{}/asm_ctgs", &work_dir);
-        log_resource("BGN: layout2ctg", &mut rdata);
+        unsafe { log_resource("BGN: layout2ctg", &mut rdata.assume_init_mut()); }
         layout::layout2ctg(&seqdb, &seqidx, &layout_file, &output_file_prefix)?;
-        let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
-        log_resource("END: layout2ctg", &mut rdata);
-
+        let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata.assume_init_read()) };
+        unsafe { log_resource("END: layout2ctg", &mut rdata.assume_init_mut()); }
     } else {
         // error correction
         let seqdb = cat_path(&work_dir, &format!("{}.seqdb", &prefix));
@@ -305,9 +307,9 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         let ovlp_out = cat_path(&work_dir, &format!("{}-ovlp", &prefix));
         let ec_read_prefix = cat_path(&work_dir, &"ec_read".to_string());
 
-        log_resource("BGN: ovlp_ec", &mut rdata);
+        unsafe { log_resource("BGN: ovlp_ec", &mut rdata.assume_init_mut()); }
         ovlp_ec::ovlp_ec(&seqdb, &seqidx, &ovlp_out, &ec_read_prefix, &parameters)?;
-        log_resource("END: ovlp_ec", &mut rdata);
+        unsafe { log_resource("END: ovlp_ec", &mut rdata.assume_init_mut());}
 
         if !keep {
             let ovlp_out_ptn = format!("{}*", ovlp_out);
@@ -342,9 +344,9 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
 
         let prefix = "ec_reads".to_string();
         if keep {
-            get_ovlps(&ec_lst, &work_dir, &prefix, false, &parameters, &mut rdata)?;
+            unsafe { get_ovlps(&ec_lst, &work_dir, &prefix, false, &parameters, &mut rdata.assume_init_mut())?; }
         } else {
-            get_ovlps(&ec_lst, &work_dir, &prefix, true, &parameters, &mut rdata)?;
+            unsafe { get_ovlps(&ec_lst, &work_dir, &prefix, true, &parameters, &mut rdata.assume_init_mut())?; }
         }
 
         if !keep {
@@ -371,20 +373,20 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         let layout_prefix = cat_path(&work_dir, &"asm".to_string());
         let layout_file = format!("{}_layout.dat", &layout_prefix);
 
-        log_resource("BGN: ovlp2layout", &mut rdata);
+        unsafe {log_resource("BGN: ovlp2layout", &mut rdata.assume_init_mut());}
         log::info!("use layout method: {}", layout_method);
         match layout_method {
             1 => graph::ovlp2layout_v1(&ovlp_out, &layout_prefix, bestn),
             _ => dp_graph::ovlp2layout_v2(&ovlp_out, &layout_prefix, bestn)?,
         }
-        log_resource("END: ovlp2layout", &mut rdata);
+        unsafe{log_resource("END: ovlp2layout", &mut rdata.assume_init_mut());}
 
         //step 5: layout -> sequence
-        log_resource("BGN: layout2ctg", &mut rdata);
+        unsafe{log_resource("BGN: layout2ctg", &mut rdata.assume_init_mut());}
         let output_file_prefix = format!("{}/asm_ctgs", &work_dir);
         layout::layout2ctg(&seqdb, &seqidx, &layout_file, &output_file_prefix)?;
-        let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
-        log_resource("END: layout2ctg", &mut rdata);
+        let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata.assume_init_read()) };
+        unsafe{log_resource("END: layout2ctg", &mut rdata.assume_init_mut());}
     }
     if no_resolve {
         log::info!("ignore dup resolution");
@@ -393,17 +395,17 @@ LICENSE: http://creativecommons.org/licenses/by-nc-sa/4.0/")
         let tgt_file = format!("{}/asm_ctgs_e0.fa", &work_dir);
         let out_file = format!("{}/asm_ctgs_e.fa", &work_dir);
 
-        log_resource("BEN: dedup_a_ctgs", &mut rdata);
+        unsafe{log_resource("BEN: dedup_a_ctgs", &mut rdata.assume_init_mut());}
         dedup_target_seqs(&ref_file, &tgt_file, &out_file, wsize, ksize, rfactor)?;
-        log_resource("END: dedup_a_ctgs", &mut rdata);
+        unsafe{log_resource("END: dedup_a_ctgs", &mut rdata.assume_init_mut());}
 
         let resolve_prefix = format!("{}/asm_ctgs_m", &work_dir);
 
-        log_resource("BEN: resolve_ht", &mut rdata);
+        unsafe{log_resource("BEN: resolve_ht", &mut rdata.assume_init_mut());}
         resolve_ht(&ref_file, &resolve_prefix, wsize, ksize, rfactor)?;
-        log_resource("END: resolve_ht", &mut rdata);
+        unsafe{log_resource("END: resolve_ht", &mut rdata.assume_init_mut());}
     }
-    let (_, ut, st) = log_resource("END: pg_asm", &mut rdata);
+    let (_, ut, st) = unsafe { log_resource("END: pg_asm", &mut rdata.assume_init_mut()) };
     log::info!("pg_asm run end");
     log::info!(
         "total user cpu time: {} seconds = {} hours",

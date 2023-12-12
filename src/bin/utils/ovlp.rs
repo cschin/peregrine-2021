@@ -48,7 +48,7 @@ struct ReadLocation {
     len: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct HitCluster {
     bgn: i32,
     end: i32,
@@ -233,7 +233,7 @@ fn get_marker_cov(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap>
     new_ovlps
 }
 
-fn find_offset(s0: &Vec<u8>, s1: &Vec<u8>, s0_range: (u32, u32)) -> Option<(u32, u32)> {
+fn find_offset(s0: &[u8], s1: &[u8], s0_range: (u32, u32)) -> Option<(u32, u32)> {
     // find offset using 8-kmer match
     let mut s0map = FxHashMap::<u32, u32>::default(); //hash to position
     s0map.reserve(256);
@@ -287,7 +287,7 @@ fn process_hits(
     rid0: u32,
     rid1: u32,
     c: &HitCluster,
-    read_index: &Vec<ReadLocation>,
+    read_index: &[ReadLocation],
     readsdb: &Mmap,
     tol: f64,
 ) -> Option<(Overlap, Option<Vec<DeltaPoint>>)> {
@@ -321,8 +321,8 @@ fn process_hits(
             let base_flag_2bit = (c >> 4) & 0x0F;
             seq1.push(base_flag_2bit);
         }
-        bgn = bgn - (rloc1.len as i32);
-        end = end - (rloc1.len as i32);
+        bgn -= rloc1.len as i32;
+        end -= rloc1.len as i32;
     }
 
     let offset0: u32;
@@ -337,9 +337,12 @@ fn process_hits(
             return None;
         }
     } else {
-        assert!(-end <= -bgn);
-        //assert!(-end > 0, "{}", end);
-        //assert!(-bgn > 0, "{}", bgn);
+        if -end <= 0 {
+            println!("DBG: {} {} {} {} {:?}", rid0, rid1, len0, len1, c);
+        };
+        assert!(-end > 0, "{} {}", bgn, end);
+        assert!(-bgn > 0, "{} {}", bgn, end);
+        assert!(-end <= -bgn, "-end:{} -bgn:{}", -end, -bgn);
         if end > 0 {
             end = 0
         };
@@ -364,8 +367,8 @@ fn process_hits(
         let left = bgn;
         let right = bgn + (len1 as i32) - (len0 as i32);
         let overlap = Overlap {
-            rid0: rid0,
-            rid1: rid1,
+            rid0,
+            rid1,
             strand1: strand,
             len0: len0 as u32,
             len1: len1 as u32,
@@ -488,8 +491,8 @@ fn extract_candidates(
 fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
     let mut clusters = Vec::<HitCluster>::with_capacity(256);
 
-    let mut cluster_end = -1000000_i32;
-    let mut cluster_start = -1000000_i32;
+    let mut cluster_end = hits[0].0;
+    let mut cluster_start = hits[0].0;
     let mut item_count = 0_u32;
     let item_count_limit = 2;
     hits.sort_by(|a, b| a.0.cmp(&b.0));
@@ -577,14 +580,14 @@ fn output_ovlp_candidate_for_chunk(
         BufWriter::new(File::create(format!("{}.{:02}", output_prefix, mychunk)).unwrap());
 
     #[cfg(target_os = "linux")]
-    let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
+    let mut rdata: MaybeUninit<libc::rusage> = unsafe { MaybeUninit::uninit().assume_init() };
     #[cfg(target_os = "linux")]
-    let _res = unsafe { getrusage(RUSAGE_THREAD, &mut rdata) };
+    let _res = unsafe { getrusage(RUSAGE_THREAD, &mut rdata.assume_init_read()) };
     #[cfg(target_os = "linux")]
-    let mut current_utime = rdata.ru_utime.tv_sec;
+    let mut current_utime = unsafe{ rdata.assume_init_read().ru_utime.tv_sec} ;
     #[cfg(target_os = "linux")]
-    let mut current_stime = rdata.ru_stime.tv_sec;
-    
+    let mut current_stime = unsafe {rdata.assume_init_read().ru_stime.tv_sec};
+
     let mut count = 0_u64;
 
     for (rid0, shmmrs) in read_shmmr_index.iter() {
@@ -595,8 +598,8 @@ fn output_ovlp_candidate_for_chunk(
         if count % 10000 == 0 {
             #[cfg(target_os = "linux")]
             {
-                let current_utime_now = rdata.ru_utime.tv_sec;
-                let current_stime_now = rdata.ru_stime.tv_sec;
+                let current_utime_now = unsafe{rdata.assume_init_read().ru_utime.tv_sec};
+                let current_stime_now = unsafe{rdata.assume_init_read().ru_stime.tv_sec};
                 let dutime = current_utime_now - current_utime;
                 let dstime = current_stime_now - current_stime;
                 log::info!(
@@ -620,11 +623,7 @@ fn output_ovlp_candidate_for_chunk(
                 current_stime = current_stime_now;
             }
             #[cfg(not(target_os = "linux"))]
-            log::info!(
-                "ovlp chunk {} finished, total: {} reads",
-                mychunk,
-                count
-            );
+            log::info!("ovlp chunk {} finished, total: {} reads", mychunk, count);
         }
         let (mut candidates, total_count, overlimit_count) =
             extract_candidates(rid0, shmmrs, smp_index);
@@ -707,9 +706,9 @@ impl ShmrIdxSet {
         let cur_mmer_idx = 0;
         Ok(ShmrIdxSet {
             filepath: path.clone(),
-            n_mmers: n_mmers,
-            idx_mmap: idx_mmap,
-            cur_mmer_idx: cur_mmer_idx,
+            n_mmers,
+            idx_mmap,
+            cur_mmer_idx,
         })
     }
 }

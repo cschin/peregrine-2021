@@ -68,11 +68,11 @@ fn index_chunk(
         if ((i + 1) << c) < wrt.len() {
             let s = i << c;
             let e = (i + 1) << c;
-            out_f.write(&wrt[s..e])?;
+            out_f.write_all(&wrt[s..e])?;
         } else {
             let s = i << c;
             let e = wrt.len();
-            out_f.write(&wrt[s..e])?;
+            out_f.write_all(&wrt[s..e])?;
         }
     }
     out_f.flush()?;

@@ -355,13 +355,15 @@ fn patch_ends(
 ) -> () {
     // rescue the connection between two regions that are connected by a tangled blob
 
-    let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
-    let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
+    let mut rdata: MaybeUninit<libc::rusage> = unsafe { MaybeUninit::uninit().assume_init() };
+    let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata.assume_init_read()) };
 
     let mut bgn_nodes = FxHashSet::<(u32, u8)>::default();
     let mut end_nodes = FxHashSet::<(u32, u8)>::default();
 
-    log_resource("BGN: patch_ends, stage1", &mut rdata);
+    unsafe {
+        log_resource("BGN: patch_ends, stage1", &mut rdata.assume_init_mut());
+    }
     for v in g0.nodes() {
         let in_deg = g0.neighbors_directed(v, Incoming).count();
         let out_deg = g0.neighbors_directed(v, Outgoing).count();
@@ -371,9 +373,11 @@ fn patch_ends(
         }
     }
     log::info!("bgn_nodes len: {}", bgn_nodes.len());
-    log_resource("END: patch_ends, stage1", &mut rdata);
+    unsafe {
+        log_resource("END: patch_ends, stage1", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: patch_ends, stage2", &mut rdata);
+        log_resource("BGN: patch_ends, stage2", &mut rdata.assume_init_mut());
+    }
     // handle some false containment cases
     let mut end_nodes_vec = end_nodes.into_iter().collect::<Vec<(u32, u8)>>();
     end_nodes_vec.sort();
@@ -422,15 +426,21 @@ fn patch_ends(
             }
         }
     }
-    log_resource("END: patch_ends, stage2", &mut rdata);
+    unsafe {
+        log_resource("END: patch_ends, stage2", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: patch_ends, stage3", &mut rdata);
+        log_resource("BGN: patch_ends, stage3", &mut rdata.assume_init_mut());
+    }
     transitive_reduction(&mut g0);
-    log_resource("END: patch_ends, stage3", &mut rdata);
+    unsafe {
+        log_resource("END: patch_ends, stage3", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: patch_ends, stage5", &mut rdata);
+        log_resource("BGN: patch_ends, stage5", &mut rdata.assume_init_mut());
+    }
     transitive_reduction(&mut g0);
-    log_resource("END: patch_ends, stage5", &mut rdata);
+    unsafe {
+        log_resource("END: patch_ends, stage5", &mut rdata.assume_init_mut());
+    }
 }
 
 fn is_branch(g: &DiGraphMap<(u32, u8), u32>, w: &(u32, u8), path_reads: &FxHashSet<u32>) -> bool {
@@ -883,9 +893,9 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
     let prefix = prefix.clone();
     let infile_pattern = [prefix, "*".to_string()].concat();
 
-    let mut rdata = unsafe { MaybeUninit::uninit().assume_init() };
-    let _res = unsafe { getrusage(RUSAGE_SELF, &mut rdata) };
-    log_resource("BGN: load overlaps", &mut rdata);
+    let mut rdata: MaybeUninit<libc::rusage> = unsafe { MaybeUninit::uninit().assume_init() };
+    let _res = unsafe { getrusage(RUSAGE_SELF, rdata.as_mut_ptr()) };
+    unsafe { log_resource("BGN: load overlaps", &mut rdata.assume_init_mut()) };
 
     let mut children = Vec::new();
     let mut _chunk: u8 = 0;
@@ -949,14 +959,18 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
             }
         }
     }
-    log_resource("END: load overlaps", &mut rdata);
+    unsafe {
+        log_resource("END: load overlaps", &mut rdata.assume_init_mut());
 
-    // graph processing
-    log_resource("BGN: build overlaps", &mut rdata);
+        // graph processing
+        log_resource("BGN: build overlaps", &mut rdata.assume_init_mut());
+    }
     let mut rpair2overlap = get_rpair2ovlps(&rid2ovlp_all, &contained, &chimers, &low_q, bestn);
-    log_resource("END: build overlaps", &mut rdata);
+    unsafe {
+        log_resource("END: build overlaps", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: build g0", &mut rdata);
+        log_resource("BGN: build g0", &mut rdata.assume_init_mut());
+    }
     let mut g0 = get_g0(&rpair2overlap);
     transitive_reduction(&mut g0);
     remove_simple_spur(&mut g0, 0);
@@ -968,20 +982,26 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
         let _res = writeln!(graph0_file, "G {} {} {} {} {}", v.0, v.1, w.0, w.1, len);
     }
     graph0_file.flush().expect("file write error");
-    log_resource("END: build g0", &mut rdata);
+    unsafe {
+        log_resource("END: build g0", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: patch ends", &mut rdata);
+        log_resource("BGN: patch ends", &mut rdata.assume_init_mut());
+    }
     patch_ends(&mut g0, &contained, &rid2ovlp_all, &mut rpair2overlap);
-    log_resource("END: patch ends", &mut rdata);
+    unsafe {
+        log_resource("END: patch ends", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: utg0", &mut rdata);
+        log_resource("BGN: utg0", &mut rdata.assume_init_mut());
+    }
     let paths = get_utg_paths(&g0);
     let (utg_g0, g_out) = utg_reduction(&paths, &g0);
     let utg_filename = format!("{}_utg0.dat", out_prefix);
     dump_utg_paths(&paths, &utg_g0, &utg_filename)?;
-    log_resource("END: utg0", &mut rdata);
+    unsafe {
+        log_resource("END: utg0", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: layout", &mut rdata);
+        log_resource("BGN: layout", &mut rdata.assume_init_mut());
+    }
     let mut read_to_ctg = FxHashMap::<ReadNode, Vec<(u32, u32)>>::default();
     generate_layout(&g_out, &rpair2overlap, &mut read_to_ctg, &out_prefix);
 
@@ -991,16 +1011,20 @@ pub fn ovlp2layout_v2(prefix: &String, out_prefix: &String, bestn: usize) -> Res
     for (v, w, len) in g_out.all_edges() {
         let _res = writeln!(graph1_file, "G {} {} {} {} {}", v.0, v.1, w.0, w.1, len);
     }
-    log_resource("END: layout", &mut rdata);
+    unsafe {
+        log_resource("END: layout", &mut rdata.assume_init_mut());
 
-    log_resource("BGN: utg1", &mut rdata);
+        log_resource("BGN: utg1", &mut rdata.assume_init_mut());
+    }
     let paths = get_utg_paths(&g_out);
     let (utg_g, _) = utg_reduction(&paths, &g_out);
     let utg_filename = format!("{}_utg.dat", out_prefix);
     dump_utg_paths(&paths, &utg_g, &utg_filename)?;
     let gfa_filename = format!("{}_utg.gfa", out_prefix);
     dump_utg_gfa(&paths, &utg_g, &rpair2overlap, &read_to_ctg, &gfa_filename)?;
-    log_resource("END: utg1", &mut rdata);
+    unsafe {
+        log_resource("END: utg1", &mut rdata.assume_init_mut());
+    }
 
     Ok(())
 }
