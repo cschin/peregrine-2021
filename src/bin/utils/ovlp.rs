@@ -234,6 +234,7 @@ fn get_marker_cov(mut ovlps: Vec<Overlap>, delta_map: &DeltaMap) -> Vec<Overlap>
 }
 
 fn find_offset(s0: &[u8], s1: &[u8], s0_range: (u32, u32)) -> Option<(u32, u32)> {
+    // println!("DBG: {} {} {:?}", s0.len(), s1.len(), s0_range);
     // find offset using 8-kmer match
     let mut s0map = FxHashMap::<u32, u32>::default(); //hash to position
     s0map.reserve(256);
@@ -302,7 +303,7 @@ fn process_hits(
     let s1 = rloc1.start;
     let len1 = rloc1.len;
     let e1 = s1 + len1;
-    // println!("DBG: {} {} {} {}", rid0, rid1, len0, len1) ;
+    // println!("DBG2: {} {} {} {} {:?}", rid0, rid1, len0, len1, c) ;
     let mut seq0 = Vec::<u8>::with_capacity(len0);
     let mut seq1 = Vec::<u8>::with_capacity(len1);
 
@@ -337,11 +338,8 @@ fn process_hits(
             return None;
         }
     } else {
-        if -end <= 0 {
-            println!("DBG: {} {} {} {} {:?}", rid0, rid1, len0, len1, c);
-        };
-        assert!(-end > 0, "{} {}", bgn, end);
-        assert!(-bgn > 0, "{} {}", bgn, end);
+        // assert!(-end > 0, "{} {}", bgn, end);
+        // assert!(-bgn > 0, "{} {}", bgn, end);
         assert!(-end <= -bgn, "-end:{} -bgn:{}", -end, -bgn);
         if end > 0 {
             end = 0
@@ -491,16 +489,18 @@ fn extract_candidates(
 fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
     let mut clusters = Vec::<HitCluster>::with_capacity(256);
 
-    let mut cluster_end = hits[0].0;
-    let mut cluster_start = hits[0].0;
     let mut item_count = 0_u32;
     let item_count_limit = 2;
+
     hits.sort_by(|a, b| a.0.cmp(&b.0));
-    for (pt, rev) in hits.iter() {
-        if *rev == true {
+    let mut cluster_end = hits[0].0 - 64;
+    let mut cluster_start = hits[0].0;
+    
+    for &(pt, rev) in hits.iter() {
+        if rev {
             continue;
         }
-        //println!("Y0 {} {} {} {} {} {}", rid, rid1, pt, cluster_end, *pt-cluster_end, rev);
+        // println!("Y0 {} {} {} {} {}", pt, cluster_start, cluster_end, pt-cluster_end, rev);
         item_count += 1;
         if pt - cluster_end > 24 {
             if item_count > item_count_limit {
@@ -510,12 +510,12 @@ fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
                     count: item_count,
                     strand: 0,
                 });
-                //println!("C {} {} {} {} {} {}", rid, rid1, cluster_start, cluster_end, item_count, 0);
+                // println!("C00 {} {} {} {}", cluster_start, cluster_end, item_count, 0);
             }
-            cluster_start = *pt;
+            cluster_start = pt;
             item_count = 0;
         }
-        cluster_end = *pt;
+        cluster_end = pt;
     }
     if item_count > item_count_limit {
         clusters.push(HitCluster {
@@ -524,17 +524,17 @@ fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
             count: item_count,
             strand: 0,
         });
-        //println!("C {} {} {} {} {} {}", rid, rid1, cluster_start, cluster_end, item_count, 0);
+        // println!("C01 {} {} {} {}", cluster_start, cluster_end, item_count, 0);
     }
 
-    let mut cluster_end = -1000000_i32;
-    let mut cluster_start = -1000000_i32;
+    let mut cluster_end = hits[0].0 - 64;
+    let mut cluster_start = hits[0].0;
     let mut item_count = 0_u32;
-    for (pt, rev) in hits.iter() {
-        if *rev == false {
+    for &(pt, rev) in hits.iter() {
+        if !rev {
             continue;
         }
-        //println!("Y0 {} {} {} {} {} {}", rid, rid1, pt, cluster_end, *pt-cluster_end, rev);
+        //println!("Y0 {} {} {} {} {}", pt, cluster_start, cluster_end, *pt-cluster_end, rev);
         item_count += 1;
         if pt - cluster_end > 24 {
             if item_count > item_count_limit {
@@ -544,12 +544,12 @@ fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
                     count: item_count,
                     strand: 1,
                 });
-                //println!("C {} {} {} {} {} {}", rid, rid1, cluster_start, cluster_end, item_count, 1);
+                // println!("C10 {} {} {} {}", cluster_start, cluster_end, item_count, 1);
             }
-            cluster_start = *pt;
+            cluster_start = pt;
             item_count = 0;
         }
-        cluster_end = *pt;
+        cluster_end = pt;
     }
     if item_count > item_count_limit {
         clusters.push(HitCluster {
@@ -558,7 +558,7 @@ fn extract_hit_cluster(hits: &mut Vec<(i32, bool)>) -> Vec<HitCluster> {
             count: item_count,
             strand: 1,
         });
-        //println!("C {} {} {} {} {} {}", rid, rid1, cluster_start, cluster_end, item_count, 1);
+        // println!("C11 {} {} {} {}",  cluster_start, cluster_end, item_count, 1);
     }
     //println!("X1 {} {} {}", rid, rid1, hits.len());
     clusters
@@ -646,7 +646,7 @@ fn output_ovlp_candidate_for_chunk(
             }
             cluster_v.sort_by(|a, b| b.1.count.cmp(&a.1.count));
             total_number_of_cluster = cluster_v.len();
-
+            // println!("DBG3: {:?}", cluster_v);
             tries = 0;
             for (rid1, c) in cluster_v.iter() {
                 //writeln!(file, "C {} {} {} {} {} {}", rid0, rid1, c.bgn, c.end, c.count, c.strand);
